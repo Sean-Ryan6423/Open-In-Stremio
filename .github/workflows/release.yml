@@ -20,6 +20,7 @@ jobs:
           mkdir -p Open-In-Stremio
           cp manifest.json Open-In-Stremio/
           cp content.js Open-In-Stremio/
+          cp content-ddg.js Open-In-Stremio/
           cp LICENSE Open-In-Stremio/
           cp -r icons Open-In-Stremio/
           zip -r Open-In-Stremio.zip Open-In-Stremio
