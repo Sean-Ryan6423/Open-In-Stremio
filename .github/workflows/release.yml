@@ -25,6 +25,19 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: Open-In-Stremio.zip
+          append_body: true
+          body: |
+            
+            ## Installation
+            
+            1. Download `Open-In-Stremio.zip` below
+            2. Extract the zip file to a folder
+            3. Open Chrome and go to `chrome://extensions/`
+            4. Enable **Developer mode** (toggle in top right)
+            5. Click **Load unpacked**
+            6. Select the extracted `Open-In-Stremio` folder
+            
+            **Requires:** [Stremio](https://www.stremio.com/) desktop app installed
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
