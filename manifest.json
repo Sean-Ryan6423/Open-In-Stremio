@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Stremio for Google",
-  "version": "1.0.0",
-  "description": "Adds a Stremio button to Google's 'Where to Watch' and 'Watch show' panels for movies and TV shows.",
+  "name": "Open in Stremio",
+  "version": "1.1.0",
+  "description": "Adds a Stremio button to Google and DuckDuckGo search results for movies and TV shows.",
   "author": "Sean",
   "homepage_url": "https://github.com/Sean-Ryan6423/Open-In-Stremio",
   "icons": {
@@ -41,6 +41,13 @@
         "https://www.google.co.nz/search*"
       ],
       "js": ["content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://duckduckgo.com/*"
+      ],
+      "js": ["content-ddg.js"],
       "run_at": "document_idle"
     }
   ]
