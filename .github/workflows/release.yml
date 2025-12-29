@@ -1,0 +1,30 @@
+name: Build Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create extension zip
+        run: |
+          mkdir -p Open-In-Stremio
+          cp manifest.json Open-In-Stremio/
+          cp content.js Open-In-Stremio/
+          cp LICENSE Open-In-Stremio/
+          cp -r icons Open-In-Stremio/
+          zip -r Open-In-Stremio.zip Open-In-Stremio
+
+      - name: Upload zip to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Open-In-Stremio.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
