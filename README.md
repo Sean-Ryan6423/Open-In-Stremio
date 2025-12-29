@@ -14,7 +14,17 @@ A Chrome extension that adds a **Stremio** button to Google's "Where to Watch" a
 
 ## Installation
 
-### From Source (Developer Mode)
+### From GitHub Release (Recommended)
+
+1. Go to the [latest release](https://github.com/Sean-Ryan6423/Open-In-Stremio/releases/latest)
+2. Download `Open-In-Stremio.zip`
+3. Extract the zip file to a folder
+4. Open Chrome and go to `chrome://extensions/`
+5. Enable **Developer mode** (toggle in top right)
+6. Click **Load unpacked**
+7. Select the extracted folder
+
+### From Source
 
 1. Clone or download this repository
 2. Open Chrome and go to `chrome://extensions/`
