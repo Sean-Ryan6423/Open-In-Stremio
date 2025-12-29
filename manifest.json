@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Stremio for Search",
+  "name": "Open in Stremio",
   "version": "1.1.0",
   "description": "Adds a Stremio button to Google and DuckDuckGo search results for movies and TV shows.",
   "author": "Sean",

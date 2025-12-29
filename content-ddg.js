@@ -113,40 +113,23 @@
   }
 
   function findMovieInfoBox() {
-    // DuckDuckGo uses various selectors for movie/TV info boxes
-    const selectors = [
-      '[data-testid="InfoboxContainer"]',
-      '.module--about',
-      '.c-base',
-      '.module--movie',
-      '.module--tv',
-      '.zci--info',
-      '.zci--movie',
-      '.zci--tv'
-    ];
-
-    for (const selector of selectors) {
-      const el = document.querySelector(selector);
-      if (el) return el;
+    // DuckDuckGo shows movie info in the first article on the results page
+    // that contains an IMDb link with a movie title (h2 heading)
+    const articles = document.querySelectorAll('article');
+    
+    for (const article of articles) {
+      const imdbLink = article.querySelector('a[href*="imdb.com/title/tt"]');
+      const heading = article.querySelector('h2');
+      // Movie info box has both an IMDb link AND a heading
+      if (imdbLink && heading) {
+        return article;
+      }
     }
     return null;
   }
 
-  function isMovieOrTVPage() {
-    const text = document.body.innerText.toLowerCase();
-    const movieKeywords = ["movie", "film", "director", "starring", "runtime", "box office", "released"];
-    const tvKeywords = ["tv series", "tv show", "episodes", "seasons", "network", "first aired"];
-    
-    const hasImdb = !!document.querySelector('a[href*="imdb.com/title/"]');
-    const hasMovieKeywords = movieKeywords.some(kw => text.includes(kw));
-    const hasTVKeywords = tvKeywords.some(kw => text.includes(kw));
-
-    return hasImdb || hasMovieKeywords || hasTVKeywords;
-  }
-
   function injectButton() {
     if (document.getElementById(BTN_ID)) return;
-    if (!isMovieOrTVPage()) return;
 
     const infoBox = findMovieInfoBox();
     if (!infoBox) return;
@@ -154,13 +137,8 @@
     const urls = buildStremioUrls();
     const button = createStremioButton(urls);
 
-    // Find a good place to insert the button
-    const titleEl = infoBox.querySelector('[data-testid="InfoboxTitle"], .module--about__title, .c-base__title, h2, h3');
-    if (titleEl && titleEl.parentElement) {
-      titleEl.parentElement.insertBefore(button, titleEl.nextSibling);
-    } else {
-      infoBox.insertBefore(button, infoBox.firstChild);
-    }
+    // Simply append to the end of the info box
+    infoBox.appendChild(button);
   }
 
   // Debounce
