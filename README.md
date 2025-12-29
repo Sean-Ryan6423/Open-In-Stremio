@@ -45,10 +45,6 @@ The extension automatically detects the IMDb ID from Google's search results and
 - google.no, google.dk, google.fi, google.at, google.ch
 - google.be, google.pt, google.gr, google.co.nz
 
-## Screenshots
-
-*Search for a movie or TV show on Google and see the Stremio button appear in the streaming options.*
-
 ## Contributing
 
 Contributions are welcome! Feel free to:
@@ -64,4 +60,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Disclaimer
 
 This extension is not affiliated with, endorsed by, or sponsored by Stremio or Google. All trademarks belong to their respective owners.
+
+---
+
+*This project was mostly vibecoded with AI assistance.* 🤖
 

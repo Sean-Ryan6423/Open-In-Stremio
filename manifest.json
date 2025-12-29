@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Adds a Stremio button to Google's 'Where to Watch' and 'Watch show' panels for movies and TV shows.",
   "author": "Sean",
-  "homepage_url": "https://github.com/YourUsername/Open-In-Stremio",
+  "homepage_url": "https://github.com/Sean-Ryan6423/Open-In-Stremio",
   "icons": {
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"

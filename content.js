@@ -143,10 +143,10 @@
 
   // Create Stremio icon for "Where to watch" section - matching exact Google structure
   function createWhereToWatchStremioButton(urls, id) {
-    // Outer wrapper: <div class="gbIPt coTbne" style="width:75px">
+    // Match the structure used by paid providers (e.g., Amazon Prime Video)
+    // Outer wrapper: <div class="bLddW U5EKEf coTbne ZEISdd">
     const outerWrapper = document.createElement("div");
-    outerWrapper.className = "gbIPt coTbne";
-    outerWrapper.style.cssText = "width: 75px;";
+    outerWrapper.className = "bLddW U5EKEf coTbne ZEISdd";
     outerWrapper.id = id;
 
     // Link: <a class="coTbne">
@@ -160,26 +160,42 @@
       window.location.href = urls.app;
     });
 
-    // Content wrapper: <div class="Fjeoze">
+    // Content wrapper matching paid items: <div class="o0DLIc w6bhBd u8GRde PKT65" role="listitem">
     const contentWrapper = document.createElement("div");
-    contentWrapper.className = "Fjeoze";
+    contentWrapper.className = "o0DLIc w6bhBd u8GRde PKT65";
+    contentWrapper.setAttribute("role", "listitem");
 
-    // Icon container: <div class="mNte6b" style="height:40px;width:40px">
+    // Icon container: <div class="hvFKJe mTMorf q1MG4e">
     const iconContainer = document.createElement("div");
-    iconContainer.className = "mNte6b";
-    iconContainer.style.cssText = "height: 40px; width: 40px;";
+    iconContainer.className = "hvFKJe mTMorf q1MG4e";
 
     const iconBg = createIconBackground();
     iconContainer.appendChild(iconBg);
 
-    // Label: <div class="NP4tUe ZYHQ7e ApHyTb">
-    const label = document.createElement("div");
-    label.className = "NP4tUe ZYHQ7e ApHyTb";
-    label.textContent = "Free";
-    label.style.cssText = "color: #188038;"; // Green for free
+    // Text container matching paid items: <div class="ellip phXTff">
+    const textContainer = document.createElement("div");
+    textContainer.className = "ellip phXTff";
+
+    // Provider name: <div class="ellip bclEt">Stremio</div>
+    const nameLabel = document.createElement("div");
+    nameLabel.className = "ellip bclEt";
+    nameLabel.textContent = "Stremio";
+
+    // Price/status: <div class="ellip rsj3fb"><span><span>Free</span></span></div>
+    const priceLabel = document.createElement("div");
+    priceLabel.className = "ellip rsj3fb";
+    priceLabel.style.cssText = "color: #188038;"; // Green for free
+    const priceSpanOuter = document.createElement("span");
+    const priceSpanInner = document.createElement("span");
+    priceSpanInner.textContent = "Free";
+    priceSpanOuter.appendChild(priceSpanInner);
+    priceLabel.appendChild(priceSpanOuter);
+
+    textContainer.appendChild(nameLabel);
+    textContainer.appendChild(priceLabel);
 
     contentWrapper.appendChild(iconContainer);
-    contentWrapper.appendChild(label);
+    contentWrapper.appendChild(textContainer);
     link.appendChild(contentWrapper);
     outerWrapper.appendChild(link);
 
