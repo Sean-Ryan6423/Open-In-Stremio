@@ -1,0 +1,28 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Build/package files
+*.zip
+*.crx
+*.pem
+
+# Node (if you add build tools later)
+node_modules/
+package-lock.json
+
+# Logs
+*.log
+

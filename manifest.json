@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "Stremio for Google",
+  "version": "1.0.0",
+  "description": "Adds a Stremio button to Google's 'Where to Watch' and 'Watch show' panels for movies and TV shows.",
+  "author": "Sean",
+  "homepage_url": "https://github.com/YourUsername/Open-In-Stremio",
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.google.com/search*",
+        "https://www.google.co.uk/search*",
+        "https://www.google.ie/search*",
+        "https://www.google.ca/search*",
+        "https://www.google.com.au/search*",
+        "https://www.google.de/search*",
+        "https://www.google.fr/search*",
+        "https://www.google.es/search*",
+        "https://www.google.it/search*",
+        "https://www.google.nl/search*",
+        "https://www.google.co.in/search*",
+        "https://www.google.co.jp/search*",
+        "https://www.google.com.br/search*",
+        "https://www.google.pl/search*",
+        "https://www.google.ru/search*",
+        "https://www.google.com.mx/search*",
+        "https://www.google.co.za/search*",
+        "https://www.google.se/search*",
+        "https://www.google.no/search*",
+        "https://www.google.dk/search*",
+        "https://www.google.fi/search*",
+        "https://www.google.at/search*",
+        "https://www.google.ch/search*",
+        "https://www.google.be/search*",
+        "https://www.google.pt/search*",
+        "https://www.google.gr/search*",
+        "https://www.google.co.nz/search*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
