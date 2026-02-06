@@ -553,29 +553,12 @@
       return;
     }
 
-    // Target the main search results container (dURPMd class or similar)
-    let targetContainer = document.querySelector('.dURPMd');
+    // Target #center_col directly - this is the main search results column
+    // We want to insert at the very TOP of center_col, not inside nested containers
+    const centerCol = document.querySelector('#center_col');
     
-    // Fallback 1: Look for the main content area by ID
-    if (!targetContainer) {
-      targetContainer = document.querySelector('#rso'); // Google's main results container
-    }
-    
-    // Fallback 2: Look for center column content
-    if (!targetContainer) {
-      targetContainer = document.querySelector('#center_col');
-    }
-    
-    // Fallback 3: Look for search result divs
-    if (!targetContainer) {
-      const searchResults = document.querySelector('div[data-async-context]');
-      if (searchResults) {
-        targetContainer = searchResults;
-      }
-    }
-
-    if (!targetContainer) {
-      console.log("[Stremio] No target container found for search chips");
+    if (!centerCol) {
+      console.log("[Stremio] No #center_col found for search chips");
       return;
     }
 
@@ -583,9 +566,9 @@
     // Use the prominent button style for search results
     const stremioButton = createSearchResultsStremioButton(urls, BTN_ID_SEARCH_CHIPS);
 
-    // Insert at the beginning of the container
-    targetContainer.insertBefore(stremioButton, targetContainer.firstChild);
-    console.log("[Stremio] Button inserted into search results container");
+    // Insert at the very beginning of #center_col
+    centerCol.insertBefore(stremioButton, centerCol.firstChild);
+    console.log("[Stremio] Button inserted at the beginning of #center_col");
   }
 
   // Find "Watch show" section and inject Stremio
