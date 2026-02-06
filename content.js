@@ -1,10 +1,12 @@
 // Adds "Open in Stremio" links to Google's "Where to watch" and "Watch show" panels.
 // Also adds a Stremio button to anime knowledge panels that might not have streaming info.
+// Also adds a Stremio button to search filter chips when Season/Episode links are detected.
 
 (function () {
   const BTN_ID_WHERE_TO_WATCH = "stremio-btn-where-to-watch";
   const BTN_ID_WATCH_SHOW = "stremio-btn-watch-show";
   const BTN_ID_ANIME_PANEL = "stremio-btn-anime-panel";
+  const BTN_ID_SEARCH_CHIPS = "stremio-btn-search-chips";
 
   // Stremio purple color
   const STREMIO_COLOR = "#7b5bf5";
@@ -345,6 +347,123 @@
     return container;
   }
 
+  // Create a Stremio button styled like Google's search filter chips
+  function createSearchChipStremioButton(urls, id) {
+    const container = document.createElement("div");
+    container.setAttribute("role", "listitem");
+    container.id = id;
+
+    const link = document.createElement("a");
+    link.href = urls.app;
+    link.setAttribute("aria-label", "Open in Stremio");
+    link.className = "nPDzT T3FoJb";
+    link.style.cssText = `
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      margin: 0 4px;
+      background: linear-gradient(135deg, ${STREMIO_COLOR} 0%, #6b4ce0 100%);
+      border-radius: 16px;
+      text-decoration: none;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(123, 91, 245, 0.3);
+    `;
+
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.href = urls.app;
+    });
+
+    // Create small play icon
+    const iconSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    iconSvg.setAttribute("width", "14");
+    iconSvg.setAttribute("height", "14");
+    iconSvg.setAttribute("viewBox", "0 0 24 24");
+    iconSvg.setAttribute("fill", "white");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M8 5v14l11-7z");
+    iconSvg.appendChild(path);
+
+    const text = document.createElement("span");
+    text.textContent = "Stremio";
+    text.style.cssText = "white-space: nowrap;";
+
+    link.appendChild(iconSvg);
+    link.appendChild(text);
+    container.appendChild(link);
+
+    // Hover effects
+    link.addEventListener("mouseenter", () => {
+      link.style.transform = "scale(1.05)";
+      link.style.boxShadow = "0 4px 8px rgba(123, 91, 245, 0.4)";
+    });
+    link.addEventListener("mouseleave", () => {
+      link.style.transform = "scale(1)";
+      link.style.boxShadow = "0 2px 4px rgba(123, 91, 245, 0.3)";
+    });
+
+    return container;
+  }
+
+  // Find search filter chips with Season/Episode links and inject Stremio button
+  function injectIntoSearchChips() {
+    if (document.getElementById(BTN_ID_SEARCH_CHIPS)) return;
+    // Don't inject if other buttons are already present
+    if (document.getElementById(BTN_ID_WATCH_SHOW) || 
+        document.getElementById(BTN_ID_WHERE_TO_WATCH) ||
+        document.getElementById(BTN_ID_ANIME_PANEL)) {
+      return;
+    }
+
+    // Look for search filter chips that indicate a TV show
+    // These are links with "Season" or "Episodes" in the text or aria-label
+    const allLinks = document.querySelectorAll('a[aria-label*="Season"], a[aria-label*="Episode"], a[aria-label*="Anime"]');
+    
+    if (allLinks.length === 0) return;
+
+    // Find the chip that contains Season/Episodes
+    let targetChip = null;
+    for (const link of allLinks) {
+      const label = link.getAttribute("aria-label") || "";
+      const text = link.textContent || "";
+      if (label.includes("Season") || label.includes("Episode") || 
+          text.includes("Season") || text.includes("Episode")) {
+        targetChip = link;
+        break;
+      }
+    }
+
+    if (!targetChip) return;
+
+    // Find the list container (role="list") that holds these chips
+    let listContainer = targetChip.closest('[role="list"]');
+    if (!listContainer) {
+      // Fallback: walk up to find a container with multiple listitems
+      let parent = targetChip.parentElement;
+      for (let i = 0; i < 5 && parent; i++) {
+        if (parent.querySelectorAll('[role="listitem"]').length >= 2) {
+          listContainer = parent;
+          break;
+        }
+        parent = parent.parentElement;
+      }
+    }
+
+    if (!listContainer) return;
+
+    const urls = buildStremioUrls();
+    const stremioChip = createSearchChipStremioButton(urls, BTN_ID_SEARCH_CHIPS);
+
+    // Insert at the beginning of the list
+    listContainer.insertBefore(stremioChip, listContainer.firstChild);
+    console.log("[Stremio] Button inserted into search chips");
+  }
+
   // Find "Watch show" section and inject Stremio
   function injectIntoWatchShow() {
     if (document.getElementById(BTN_ID_WATCH_SHOW)) return;
@@ -599,6 +718,8 @@
     injectIntoWhereToWatch();
     // Only inject anime panel button if no other buttons were added
     injectIntoAnimePanel();
+    // Inject into search chips if Season/Episode links are present
+    injectIntoSearchChips();
   }
 
   // Debounce
