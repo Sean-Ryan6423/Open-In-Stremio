@@ -553,22 +553,55 @@
       return;
     }
 
-    // Target #center_col directly - this is the main search results column
-    // We want to insert at the very TOP of center_col, not inside nested containers
-    const centerCol = document.querySelector('#center_col');
+    // Find the main search results area - look for #rso which contains search results
+    // #rso is more reliable as it's specifically the search results, not the whole center column
+    let targetContainer = document.querySelector('#rso');
     
-    if (!centerCol) {
-      console.log("[Stremio] No #center_col found for search chips");
+    if (!targetContainer) {
+      // Fallback to #center_col
+      targetContainer = document.querySelector('#center_col');
+    }
+    
+    if (!targetContainer) {
+      console.log("[Stremio] No target container found for search chips");
       return;
+    }
+
+    // Check if button would be inserted inside "People also ask" - avoid this
+    const peopleAlsoAsk = document.querySelector('[data-sgrd="true"]') || 
+                          document.querySelector('[jsname="yEVEwb"]') ||
+                          Array.from(document.querySelectorAll('div')).find(el => 
+                            el.textContent.trim().startsWith('People also ask'));
+    
+    // Find the first actual search result (not "People also ask" or other widgets)
+    // Look for the first child that contains actual search result links
+    let insertBeforeElement = null;
+    for (const child of targetContainer.children) {
+      // Skip "People also ask" sections
+      if (peopleAlsoAsk && (child.contains(peopleAlsoAsk) || peopleAlsoAsk.contains(child))) {
+        continue;
+      }
+      // Look for actual search results - they typically have cite elements or specific structures
+      if (child.querySelector('cite') || child.querySelector('a[href*="wikipedia"]') || 
+          child.querySelector('a[data-ved]') || child.querySelector('[data-content-feature]')) {
+        insertBeforeElement = child;
+        break;
+      }
     }
 
     const urls = buildStremioUrls();
     // Use the prominent button style for search results
     const stremioButton = createSearchResultsStremioButton(urls, BTN_ID_SEARCH_CHIPS);
 
-    // Insert at the very beginning of #center_col
-    centerCol.insertBefore(stremioButton, centerCol.firstChild);
-    console.log("[Stremio] Button inserted at the beginning of #center_col");
+    if (insertBeforeElement) {
+      // Insert before the first actual search result
+      targetContainer.insertBefore(stremioButton, insertBeforeElement);
+      console.log("[Stremio] Button inserted before first search result");
+    } else {
+      // Fallback: prepend to container
+      targetContainer.prepend(stremioButton);
+      console.log("[Stremio] Button prepended to container");
+    }
   }
 
   // Find "Watch show" section and inject Stremio
