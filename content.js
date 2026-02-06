@@ -410,20 +410,25 @@
     return container;
   }
 
-  // Create a prominent Stremio button for search results pages
+  // Create a Stremio button styled as a Google search result (MjjYud wrapper)
   function createSearchResultsStremioButton(urls, id) {
+    // Create the outer wrapper matching Google's search result structure
+    const wrapper = document.createElement("div");
+    wrapper.className = "MjjYud";
+    wrapper.id = id;
+
+    // Inner content container
     const container = document.createElement("div");
-    container.id = id;
     container.style.cssText = `
       display: flex;
       align-items: center;
       padding: 16px 20px;
-      margin: 0 0 16px 0;
       background: linear-gradient(135deg, ${STREMIO_COLOR} 0%, #6b4ce0 100%);
       border-radius: 12px;
       cursor: pointer;
       transition: all 0.2s ease;
       box-shadow: 0 4px 12px rgba(123, 91, 245, 0.3);
+      margin-bottom: 10px;
     `;
 
     const link = document.createElement("a");
@@ -490,6 +495,7 @@
     link.appendChild(iconBg);
     link.appendChild(textContainer);
     container.appendChild(link);
+    wrapper.appendChild(container);
 
     // Hover effects
     container.addEventListener("mouseenter", () => {
@@ -501,7 +507,7 @@
       container.style.boxShadow = "0 4px 12px rgba(123, 91, 245, 0.3)";
     });
 
-    return container;
+    return wrapper;
   }
 
   // Find search filter chips with Season/Episode links and inject Stremio button
@@ -553,55 +559,22 @@
       return;
     }
 
-    // Find the main search results area - look for #rso which contains search results
-    // #rso is more reliable as it's specifically the search results, not the whole center column
-    let targetContainer = document.querySelector('#rso');
+    // Find the first MjjYud element (Google's search result wrapper class)
+    // We'll insert our button as a sibling with the same class structure
+    const firstSearchResult = document.querySelector('.MjjYud');
     
-    if (!targetContainer) {
-      // Fallback to #center_col
-      targetContainer = document.querySelector('#center_col');
-    }
-    
-    if (!targetContainer) {
-      console.log("[Stremio] No target container found for search chips");
+    if (!firstSearchResult || !firstSearchResult.parentElement) {
+      console.log("[Stremio] No MjjYud search result found");
       return;
     }
 
-    // Check if button would be inserted inside "People also ask" - avoid this
-    const peopleAlsoAsk = document.querySelector('[data-sgrd="true"]') || 
-                          document.querySelector('[jsname="yEVEwb"]') ||
-                          Array.from(document.querySelectorAll('div')).find(el => 
-                            el.textContent.trim().startsWith('People also ask'));
-    
-    // Find the first actual search result (not "People also ask" or other widgets)
-    // Look for the first child that contains actual search result links
-    let insertBeforeElement = null;
-    for (const child of targetContainer.children) {
-      // Skip "People also ask" sections
-      if (peopleAlsoAsk && (child.contains(peopleAlsoAsk) || peopleAlsoAsk.contains(child))) {
-        continue;
-      }
-      // Look for actual search results - they typically have cite elements or specific structures
-      if (child.querySelector('cite') || child.querySelector('a[href*="wikipedia"]') || 
-          child.querySelector('a[data-ved]') || child.querySelector('[data-content-feature]')) {
-        insertBeforeElement = child;
-        break;
-      }
-    }
-
     const urls = buildStremioUrls();
-    // Use the prominent button style for search results
+    // Create button with MjjYud wrapper to match search results
     const stremioButton = createSearchResultsStremioButton(urls, BTN_ID_SEARCH_CHIPS);
 
-    if (insertBeforeElement) {
-      // Insert before the first actual search result
-      targetContainer.insertBefore(stremioButton, insertBeforeElement);
-      console.log("[Stremio] Button inserted before first search result");
-    } else {
-      // Fallback: prepend to container
-      targetContainer.prepend(stremioButton);
-      console.log("[Stremio] Button prepended to container");
-    }
+    // Insert as the first search result (before the first MjjYud)
+    firstSearchResult.parentElement.insertBefore(stremioButton, firstSearchResult);
+    console.log("[Stremio] Button inserted as first MjjYud search result");
   }
 
   // Find "Watch show" section and inject Stremio
