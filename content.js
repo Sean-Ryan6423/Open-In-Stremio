@@ -559,12 +559,12 @@
       return;
     }
 
-    // Find the first MjjYud element (Google's search result wrapper class)
-    // We'll insert our button as a sibling with the same class structure
-    const firstSearchResult = document.querySelector('.MjjYud');
+    // Target the #rso container (which has class dURPMd) - the main search results container
+    // User explicitly requested: "Make it the first class of: <div class="dURPMd" ... id="rso">"
+    const rsoContainer = document.getElementById('rso') || document.querySelector('.dURPMd');
     
-    if (!firstSearchResult || !firstSearchResult.parentElement) {
-      console.log("[Stremio] No MjjYud search result found");
+    if (!rsoContainer) {
+      console.log("[Stremio] No #rso or .dURPMd container found");
       return;
     }
 
@@ -572,9 +572,9 @@
     // Create button with MjjYud wrapper to match search results
     const stremioButton = createSearchResultsStremioButton(urls, BTN_ID_SEARCH_CHIPS);
 
-    // Insert as the first search result (before the first MjjYud)
-    firstSearchResult.parentElement.insertBefore(stremioButton, firstSearchResult);
-    console.log("[Stremio] Button inserted as first MjjYud search result");
+    // Insert as the FIRST child of the rso/dURPMd container
+    rsoContainer.insertBefore(stremioButton, rsoContainer.firstChild);
+    console.log("[Stremio] Button inserted as first child of #rso/.dURPMd");
   }
 
   // Find "Watch show" section and inject Stremio
