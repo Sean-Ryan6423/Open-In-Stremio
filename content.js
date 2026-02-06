@@ -469,7 +469,40 @@
     iconsContainer.insertBefore(stremioButton, iconsContainer.firstChild);
   }
 
-  // Find anime/manga knowledge panels and inject Stremio button
+  // Detect if page has TV show/movie content (broader than just anime)
+  function detectTVShowContent() {
+    const text = document.body.innerText.toLowerCase();
+    
+    // Look for TV show indicators
+    const tvIndicators = [
+      "episodes", "seasons", "tv series", "tv show", "series",
+      "premiered", "aired", "first episode", "network:",
+      "imdb", "rotten tomatoes", "streaming"
+    ];
+    
+    const hasTVIndicators = tvIndicators.some(indicator => text.includes(indicator));
+    
+    // Check for knowledge panel with title
+    const hasKnowledgePanel = document.querySelector('[data-attrid="title"]') !== null;
+    
+    // Check for tabs like Episodes, Cast, Reviews (indicates TV show/movie)
+    const tabs = document.querySelectorAll('[role="tab"], [role="tablist"] a');
+    let hasTVTabs = false;
+    for (const tab of tabs) {
+      const tabText = tab.textContent.toLowerCase();
+      if (tabText.includes("episodes") || tabText.includes("cast") || tabText.includes("reviews")) {
+        hasTVTabs = true;
+        break;
+      }
+    }
+    
+    return {
+      isTVShow: (hasTVIndicators && hasKnowledgePanel) || hasTVTabs,
+      hasKnowledgePanel: hasKnowledgePanel
+    };
+  }
+
+  // Find anime/manga/TV show knowledge panels and inject Stremio button
   function injectIntoAnimePanel() {
     // Don't inject if we already have buttons from Watch Show or Where to Watch
     if (document.getElementById(BTN_ID_WATCH_SHOW) || 
@@ -478,12 +511,15 @@
       return;
     }
 
-    // Check if this page has anime content
+    // Check if this page has anime or TV show content
     const animeInfo = detectAnimeContent();
-    if (!animeInfo.isAnime) return;
+    const tvInfo = detectTVShowContent();
+    
+    if (!animeInfo.isAnime && !tvInfo.isTVShow) return;
 
     // Find the "About" section - look for the heading or description area
-    let aboutSection = null;
+    let insertionPoint = null;
+    let insertBefore = true;
     
     // Method 1: Look for "About" heading text (exact match)
     const allElements = document.querySelectorAll('span, div, h2, h3');
@@ -491,61 +527,70 @@
       const text = el.textContent.trim().toLowerCase();
       if (text === "about" || text === "overview" || text === "description") {
         // Found the About heading, get its parent container
-        aboutSection = el.closest('[data-attrid]') || el.parentElement;
+        insertionPoint = el.closest('[data-attrid]') || el.parentElement;
         break;
       }
     }
 
     // Method 2: Look for the description container with data-attrid
-    if (!aboutSection) {
-      aboutSection = document.querySelector('[data-attrid*="description"]');
+    if (!insertionPoint) {
+      insertionPoint = document.querySelector('[data-attrid*="description"]');
     }
 
     // Method 3: Look for common description classes
-    if (!aboutSection) {
+    if (!insertionPoint) {
       const descSelectors = ['.kno-rdesc', '.LGOjhe', '.kno-desc'];
       for (const selector of descSelectors) {
-        aboutSection = document.querySelector(selector);
-        if (aboutSection) break;
+        insertionPoint = document.querySelector(selector);
+        if (insertionPoint) break;
       }
     }
 
-    // Method 4: Find the knowledge panel title and look for description nearby
-    if (!aboutSection) {
+    // Method 4: Find the knowledge panel title and insert after header area
+    if (!insertionPoint) {
       const titleEl = document.querySelector('[data-attrid="title"]');
       if (titleEl) {
-        let parent = titleEl;
-        for (let i = 0; i < 8; i++) {
-          if (parent.parentElement) {
-            parent = parent.parentElement;
-            // Look for any element with description-like content
-            const possibleDescs = parent.querySelectorAll('[data-attrid*="description"], [data-attrid*="bio"], [data-attrid*="about"]');
-            if (possibleDescs.length > 0) {
-              aboutSection = possibleDescs[0];
+        // Walk up to find the header container
+        let headerContainer = titleEl;
+        for (let i = 0; i < 5; i++) {
+          if (headerContainer.parentElement) {
+            const parent = headerContainer.parentElement;
+            // Look for a container that has multiple children (header area)
+            if (parent.children.length >= 2) {
+              headerContainer = parent;
               break;
             }
-            // Fallback: look for a text block that's longer (likely description)
-            const divs = parent.querySelectorAll('div');
-            for (const div of divs) {
-              if (div.textContent.length > 100 && div.querySelectorAll('a').length <= 2) {
-                aboutSection = div;
-                break;
-              }
-            }
-            if (aboutSection) break;
+            headerContainer = parent;
           }
         }
+        // Insert after the header container
+        insertionPoint = headerContainer;
+        insertBefore = false;
       }
     }
 
-    if (!aboutSection) return;
+    // Method 5: Look for tabs row and insert before it
+    if (!insertionPoint) {
+      const tabsRow = document.querySelector('[role="tablist"]');
+      if (tabsRow) {
+        insertionPoint = tabsRow;
+        insertBefore = true;
+      }
+    }
+
+    if (!insertionPoint) return;
 
     const urls = buildStremioUrls();
     const stremioButton = createAnimePanelStremioButton(urls, BTN_ID_ANIME_PANEL);
 
-    // Insert the button at the beginning of the About section
-    if (aboutSection.parentElement) {
-      aboutSection.parentElement.insertBefore(stremioButton, aboutSection);
+    // Insert the button
+    if (insertionPoint.parentElement) {
+      if (insertBefore) {
+        insertionPoint.parentElement.insertBefore(stremioButton, insertionPoint);
+      } else {
+        // Insert after
+        insertionPoint.parentElement.insertBefore(stremioButton, insertionPoint.nextSibling);
+      }
     }
   }
 
