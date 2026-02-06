@@ -571,39 +571,67 @@
     // Create button with MjjYud wrapper to match search results
     const stremioButton = createSearchResultsStremioButton(urls, BTN_ID_SEARCH_CHIPS);
 
-    // Find the first MjjYud element that contains actual search result content
-    // (has an A6K0A div or contains a cite element - indicates real search result)
-    // Skip MjjYud elements that only contain focusSentinel or controller divs
+    // Find the first MjjYud element that contains an ACTUAL SEARCH RESULT
+    // Must explicitly SKIP "People also ask" sections and focusSentinel divs
     const mjjYudElements = rsoContainer.querySelectorAll(':scope > .MjjYud');
     let targetElement = null;
     
     for (const mjj of mjjYudElements) {
-      // Check if this MjjYud has actual content (A6K0A class or cite element)
-      const hasContent = mjj.querySelector('.A6K0A') || 
-                         mjj.querySelector('cite') || 
-                         mjj.querySelector('a[href*="imdb.com"]') ||
-                         mjj.querySelector('a[href*="wikipedia.org"]') ||
-                         mjj.querySelector('.VwiC3b'); // Description text class
+      // SKIP: "People also ask" sections
+      const innerText = mjj.innerText.toLowerCase();
+      if (innerText.includes("people also ask") || 
+          innerText.includes("related questions") ||
+          mjj.querySelector('[data-initq]') ||  // PAA has this attribute
+          mjj.querySelector('.related-question-pair')) {
+        console.log("[Stremio] Skipping People also ask section");
+        continue;
+      }
       
-      // Skip if it only has focusSentinel or jscontroller divs
-      const hasFocusSentinel = mjj.querySelector('.focusSentinel');
-      const childCount = mjj.children.length;
+      // SKIP: focusSentinel-only divs
+      if (mjj.querySelector('.focusSentinel') && mjj.children.length <= 2) {
+        continue;
+      }
       
-      // If it has content or is not just focusSentinels
-      if (hasContent || (childCount > 0 && !hasFocusSentinel)) {
+      // SKIP: empty or jscontroller-only divs
+      if (!mjj.hasChildNodes() || mjj.children.length === 0) {
+        continue;
+      }
+      
+      // CHECK: Is this an actual search result?
+      // Real search results have: cite element (URL), VwiC3b (description), or known domains
+      const hasCite = mjj.querySelector('cite');
+      const hasDescription = mjj.querySelector('.VwiC3b, .lEBKkf'); // Description classes
+      const hasKnownDomainLink = mjj.querySelector('a[href*="wikipedia.org"], a[href*="imdb.com"], a[href*="fandom.com"], a[href*="rottentomatoes.com"]');
+      const hasSearchResultStructure = mjj.querySelector('.g') || mjj.querySelector('.tF2Cxc');
+      
+      if (hasCite || hasDescription || hasKnownDomainLink || hasSearchResultStructure) {
         targetElement = mjj;
+        console.log("[Stremio] Found actual search result MjjYud");
         break;
       }
     }
 
     if (targetElement) {
-      // Insert the button BEFORE the first content-bearing MjjYud
+      // Insert the button BEFORE the first actual search result
       rsoContainer.insertBefore(stremioButton, targetElement);
-      console.log("[Stremio] Button inserted before first content MjjYud");
+      console.log("[Stremio] Button inserted before first search result");
     } else {
-      // Fallback: use prepend to force it as the first child
-      rsoContainer.prepend(stremioButton);
-      console.log("[Stremio] Button prepended to #rso/.dURPMd");
+      // Fallback: insert before the first child that isn't a focusSentinel
+      let firstNonSentinel = null;
+      for (const child of rsoContainer.children) {
+        if (!child.classList.contains('focusSentinel') && 
+            !child.querySelector('.focusSentinel:only-child')) {
+          firstNonSentinel = child;
+          break;
+        }
+      }
+      if (firstNonSentinel) {
+        rsoContainer.insertBefore(stremioButton, firstNonSentinel);
+        console.log("[Stremio] Button inserted before first non-sentinel child");
+      } else {
+        rsoContainer.prepend(stremioButton);
+        console.log("[Stremio] Button prepended to #rso/.dURPMd");
+      }
     }
   }
 
