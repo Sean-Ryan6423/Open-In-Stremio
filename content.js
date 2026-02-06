@@ -410,6 +410,100 @@
     return container;
   }
 
+  // Create a prominent Stremio button for search results pages
+  function createSearchResultsStremioButton(urls, id) {
+    const container = document.createElement("div");
+    container.id = id;
+    container.style.cssText = `
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      margin: 0 0 16px 0;
+      background: linear-gradient(135deg, ${STREMIO_COLOR} 0%, #6b4ce0 100%);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(123, 91, 245, 0.3);
+    `;
+
+    const link = document.createElement("a");
+    link.href = urls.app;
+    link.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: white;
+      width: 100%;
+    `;
+
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.href = urls.app;
+    });
+
+    // Create icon
+    const iconBg = document.createElement("div");
+    iconBg.style.cssText = `
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    `;
+    
+    const iconSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    iconSvg.setAttribute("width", "22");
+    iconSvg.setAttribute("height", "22");
+    iconSvg.setAttribute("viewBox", "0 0 24 24");
+    iconSvg.setAttribute("fill", "white");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M8 5v14l11-7z");
+    iconSvg.appendChild(path);
+    iconBg.appendChild(iconSvg);
+
+    // Create text content
+    const textContainer = document.createElement("div");
+    textContainer.style.cssText = "display: flex; flex-direction: column; gap: 2px;";
+
+    const mainText = document.createElement("span");
+    mainText.textContent = "Open in Stremio";
+    mainText.style.cssText = `
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+    `;
+
+    const subText = document.createElement("span");
+    subText.textContent = "Stream this show free with add-ons";
+    subText.style.cssText = `
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.85);
+    `;
+
+    textContainer.appendChild(mainText);
+    textContainer.appendChild(subText);
+
+    link.appendChild(iconBg);
+    link.appendChild(textContainer);
+    container.appendChild(link);
+
+    // Hover effects
+    container.addEventListener("mouseenter", () => {
+      container.style.transform = "translateY(-2px)";
+      container.style.boxShadow = "0 8px 20px rgba(123, 91, 245, 0.4)";
+    });
+    container.addEventListener("mouseleave", () => {
+      container.style.transform = "translateY(0)";
+      container.style.boxShadow = "0 4px 12px rgba(123, 91, 245, 0.3)";
+    });
+
+    return container;
+  }
+
   // Find search filter chips with Season/Episode links and inject Stremio button
   function injectIntoSearchChips() {
     if (document.getElementById(BTN_ID_SEARCH_CHIPS)) return;
@@ -420,48 +514,78 @@
       return;
     }
 
-    // Look for search filter chips that indicate a TV show
-    // These are links with "Season" or "Episodes" in the text or aria-label
-    const allLinks = document.querySelectorAll('a[aria-label*="Season"], a[aria-label*="Episode"], a[aria-label*="Anime"]');
+    // Check if there are search filter chips indicating a TV show (Season, Episode, etc.)
+    // These chips contain spans/links with text like "Season 1", "Season 2", "Episodes"
+    const pageText = document.body.innerText.toLowerCase();
+    let hasShowIndicators = false;
     
-    if (allLinks.length === 0) return;
-
-    // Find the chip that contains Season/Episodes
-    let targetChip = null;
-    for (const link of allLinks) {
-      const label = link.getAttribute("aria-label") || "";
-      const text = link.textContent || "";
-      if (label.includes("Season") || label.includes("Episode") || 
-          text.includes("Season") || text.includes("Episode")) {
-        targetChip = link;
+    // Method 1: Check for Season/Episode text patterns in page
+    const showPatterns = [
+      /season\s*1\b/i, /season\s*2\b/i, /season\s*3\b/i,
+      /\bepisodes?\b/i, /\bcharacters\b/i,
+      /episode\s*\d+/i
+    ];
+    
+    for (const pattern of showPatterns) {
+      if (pattern.test(pageText)) {
+        hasShowIndicators = true;
+        console.log("[Stremio] Found show indicator pattern:", pattern);
         break;
       }
     }
 
-    if (!targetChip) return;
-
-    // Find the list container (role="list") that holds these chips
-    let listContainer = targetChip.closest('[role="list"]');
-    if (!listContainer) {
-      // Fallback: walk up to find a container with multiple listitems
-      let parent = targetChip.parentElement;
-      for (let i = 0; i < 5 && parent; i++) {
-        if (parent.querySelectorAll('[role="listitem"]').length >= 2) {
-          listContainer = parent;
+    // Method 2: Look for specific chip-like elements with Season/Episode text
+    if (!hasShowIndicators) {
+      const chipElements = document.querySelectorAll('a, span, div');
+      for (const el of chipElements) {
+        const text = el.textContent.trim();
+        // Check for chips that look like "Season 1", "Episodes", etc.
+        if (/^Season\s*\d*$/i.test(text) || /^Episodes?$/i.test(text)) {
+          hasShowIndicators = true;
+          console.log("[Stremio] Found show indicator element:", text);
           break;
         }
-        parent = parent.parentElement;
       }
     }
 
-    if (!listContainer) return;
+    if (!hasShowIndicators) {
+      console.log("[Stremio] No show indicators found in search chips");
+      return;
+    }
+
+    // Target the main search results container (dURPMd class or similar)
+    let targetContainer = document.querySelector('.dURPMd');
+    
+    // Fallback 1: Look for the main content area by ID
+    if (!targetContainer) {
+      targetContainer = document.querySelector('#rso'); // Google's main results container
+    }
+    
+    // Fallback 2: Look for center column content
+    if (!targetContainer) {
+      targetContainer = document.querySelector('#center_col');
+    }
+    
+    // Fallback 3: Look for search result divs
+    if (!targetContainer) {
+      const searchResults = document.querySelector('div[data-async-context]');
+      if (searchResults) {
+        targetContainer = searchResults;
+      }
+    }
+
+    if (!targetContainer) {
+      console.log("[Stremio] No target container found for search chips");
+      return;
+    }
 
     const urls = buildStremioUrls();
-    const stremioChip = createSearchChipStremioButton(urls, BTN_ID_SEARCH_CHIPS);
+    // Use the prominent button style for search results
+    const stremioButton = createSearchResultsStremioButton(urls, BTN_ID_SEARCH_CHIPS);
 
-    // Insert at the beginning of the list
-    listContainer.insertBefore(stremioChip, listContainer.firstChild);
-    console.log("[Stremio] Button inserted into search chips");
+    // Insert at the beginning of the container
+    targetContainer.insertBefore(stremioButton, targetContainer.firstChild);
+    console.log("[Stremio] Button inserted into search results container");
   }
 
   // Find "Watch show" section and inject Stremio
