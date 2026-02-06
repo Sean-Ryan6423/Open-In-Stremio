@@ -93,6 +93,22 @@
     };
   }
 
+  // Open Stremio and try to bring it to foreground
+  // Note: Browser security limits control over external app focus,
+  // but blurring the browser window can help the OS switch focus
+  function openStremio(url) {
+    // Blur the browser window to release focus
+    window.blur();
+    
+    // Open the Stremio protocol URL
+    window.location.href = url;
+    
+    // Additional blur after a short delay to help with focus switching
+    setTimeout(() => {
+      window.blur();
+    }, 100);
+  }
+
   // Create Stremio play icon SVG
   function createPlayIcon() {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -137,7 +153,7 @@
 
     link.addEventListener("click", (e) => {
       e.preventDefault();
-      window.location.href = urls.app;
+      openStremio(urls.app);
     });
 
     // Match the Fjeoze wrapper
@@ -199,7 +215,7 @@
 
     link.addEventListener("click", (e) => {
       e.preventDefault();
-      window.location.href = urls.app;
+      openStremio(urls.app);
     });
 
     // Content wrapper matching paid items: <div class="o0DLIc w6bhBd u8GRde PKT65" role="listitem">
@@ -285,7 +301,7 @@
 
     link.addEventListener("click", (e) => {
       e.preventDefault();
-      window.location.href = urls.app;
+      openStremio(urls.app);
     });
 
     // Create icon
