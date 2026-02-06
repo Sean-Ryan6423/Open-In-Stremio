@@ -560,7 +560,6 @@
     }
 
     // Target the #rso container (which has class dURPMd) - the main search results container
-    // User explicitly requested: "Make it the first class of: <div class="dURPMd" ... id="rso">"
     const rsoContainer = document.getElementById('rso') || document.querySelector('.dURPMd');
     
     if (!rsoContainer) {
@@ -572,9 +571,40 @@
     // Create button with MjjYud wrapper to match search results
     const stremioButton = createSearchResultsStremioButton(urls, BTN_ID_SEARCH_CHIPS);
 
-    // Insert as the FIRST child of the rso/dURPMd container
-    rsoContainer.insertBefore(stremioButton, rsoContainer.firstChild);
-    console.log("[Stremio] Button inserted as first child of #rso/.dURPMd");
+    // Find the first MjjYud element that contains actual search result content
+    // (has an A6K0A div or contains a cite element - indicates real search result)
+    // Skip MjjYud elements that only contain focusSentinel or controller divs
+    const mjjYudElements = rsoContainer.querySelectorAll(':scope > .MjjYud');
+    let targetElement = null;
+    
+    for (const mjj of mjjYudElements) {
+      // Check if this MjjYud has actual content (A6K0A class or cite element)
+      const hasContent = mjj.querySelector('.A6K0A') || 
+                         mjj.querySelector('cite') || 
+                         mjj.querySelector('a[href*="imdb.com"]') ||
+                         mjj.querySelector('a[href*="wikipedia.org"]') ||
+                         mjj.querySelector('.VwiC3b'); // Description text class
+      
+      // Skip if it only has focusSentinel or jscontroller divs
+      const hasFocusSentinel = mjj.querySelector('.focusSentinel');
+      const childCount = mjj.children.length;
+      
+      // If it has content or is not just focusSentinels
+      if (hasContent || (childCount > 0 && !hasFocusSentinel)) {
+        targetElement = mjj;
+        break;
+      }
+    }
+
+    if (targetElement) {
+      // Insert the button BEFORE the first content-bearing MjjYud
+      rsoContainer.insertBefore(stremioButton, targetElement);
+      console.log("[Stremio] Button inserted before first content MjjYud");
+    } else {
+      // Fallback: use prepend to force it as the first child
+      rsoContainer.prepend(stremioButton);
+      console.log("[Stremio] Button prepended to #rso/.dURPMd");
+    }
   }
 
   // Find "Watch show" section and inject Stremio
