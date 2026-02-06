@@ -94,19 +94,29 @@
   }
 
   // Open Stremio and try to bring it to foreground
-  // Note: Browser security limits control over external app focus,
-  // but blurring the browser window can help the OS switch focus
+  // Note: Browser security limits control over external app focus
   function openStremio(url) {
-    // Blur the browser window to release focus
-    window.blur();
+    // Method 1: Try using a hidden iframe (sometimes triggers better focus behavior)
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
     
-    // Open the Stremio protocol URL
-    window.location.href = url;
+    try {
+      iframe.contentWindow.location.href = url;
+    } catch (e) {
+      // Fallback to direct navigation if iframe fails
+      window.location.href = url;
+    }
     
-    // Additional blur after a short delay to help with focus switching
+    // Clean up iframe after a delay
     setTimeout(() => {
-      window.blur();
-    }, 100);
+      iframe.remove();
+    }, 1000);
+    
+    // Blur browser window to help with focus switch
+    window.blur();
+    setTimeout(() => window.blur(), 100);
+    setTimeout(() => window.blur(), 300);
   }
 
   // Create Stremio play icon SVG
