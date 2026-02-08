@@ -62,4 +62,3 @@ https://github.com/Sean-Ryan6423/Open-In-Stremio
 If you have any questions or concerns about this privacy policy, please open an issue on the GitHub repository:
 https://github.com/Sean-Ryan6423/Open-In-Stremio/issues
 
-
