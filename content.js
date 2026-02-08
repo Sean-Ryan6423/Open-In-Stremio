@@ -594,11 +594,16 @@
     }
   }
 
+  // Check settings and inject buttons accordingly
   function injectButtons() {
     injectIntoWatchShow();
     injectIntoWhereToWatch();
-    // Only inject anime panel button if no other buttons were added
-    injectIntoAnimePanel();
+    // Only inject anime panel button if enabled and no other buttons were added
+    chrome.storage.sync.get({ showAnimePanelButton: true }, (settings) => {
+      if (settings.showAnimePanelButton) {
+        injectIntoAnimePanel();
+      }
+    });
   }
 
   // Debounce
