@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Open in Stremio",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Adds a Stremio button to Google and DuckDuckGo search results for movies and TV shows.",
   "author": "Sean",
   "homepage_url": "https://github.com/Sean-Ryan6423/Open-In-Stremio",
