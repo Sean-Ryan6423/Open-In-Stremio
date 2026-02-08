@@ -1,8 +1,10 @@
 // Adds "Open in Stremio" links to Google's "Where to watch" and "Watch show" panels.
+// Also adds a Stremio button to anime knowledge panels that might not have streaming info.
 
 (function () {
   const BTN_ID_WHERE_TO_WATCH = "stremio-btn-where-to-watch";
   const BTN_ID_WATCH_SHOW = "stremio-btn-watch-show";
+  const BTN_ID_ANIME_PANEL = "stremio-btn-anime-panel";
 
   // Stremio purple color
   const STREMIO_COLOR = "#7b5bf5";
@@ -22,6 +24,79 @@
     const episodesTab = Array.from(document.querySelectorAll("a, span, div"))
       .some(el => (el.textContent || "").trim().toLowerCase() === "episodes");
     return episodesTab ? "series" : "movie";
+  }
+
+  // Detect if the page contains anime-related content
+  function detectAnimeContent() {
+    const text = document.body.innerText.toLowerCase();
+    
+    // Check for anime-specific indicators
+    const animeIndicators = [
+      "anime", "manga", "light novel", "japanese animation",
+      "aired", "premiered", "studio:", "studios:",
+      "myanimelist", "anilist", "crunchyroll", "funimation",
+      "japanese tv series", "anime series", "anime film",
+      "original run", "episodes", "seasons"
+    ];
+    
+    // Check for anime streaming/database links
+    const animeLinks = document.querySelectorAll('a[href*="myanimelist.net"], a[href*="anilist.co"], a[href*="crunchyroll.com"], a[href*="funimation.com"], a[href*="anime-planet.com"], a[href*="kitsu.io"], a[href*="anidb.net"]');
+    
+    // Check for anime-related text
+    const hasAnimeText = animeIndicators.some(indicator => text.includes(indicator));
+    
+    // Check if there's a knowledge panel with anime-like content
+    const knowledgePanel = document.querySelector('[data-attrid="title"], .kp-header, .knowledge-panel');
+    const hasKnowledgePanel = knowledgePanel !== null;
+    
+    // Look for genre labels containing anime
+    const genreLabels = document.querySelectorAll('[data-attrid*="genre"], [data-attrid*="type"]');
+    let hasAnimeGenre = false;
+    genreLabels.forEach(label => {
+      if (label.textContent.toLowerCase().includes("anime")) {
+        hasAnimeGenre = true;
+      }
+    });
+    
+    return {
+      isAnime: hasAnimeText || animeLinks.length > 0 || hasAnimeGenre,
+      hasAnimeLinks: animeLinks.length > 0,
+      hasKnowledgePanel: hasKnowledgePanel,
+      confidence: (hasAnimeText ? 1 : 0) + (animeLinks.length > 0 ? 2 : 0) + (hasAnimeGenre ? 2 : 0)
+    };
+  }
+
+  // Detect if page has TV show/movie content (broader than just anime)
+  function detectTVShowContent() {
+    const text = document.body.innerText.toLowerCase();
+    
+    // Look for TV show indicators
+    const tvIndicators = [
+      "episodes", "seasons", "tv series", "tv show", "series",
+      "premiered", "aired", "first episode", "network:",
+      "imdb", "rotten tomatoes", "streaming"
+    ];
+    
+    const hasTVIndicators = tvIndicators.some(indicator => text.includes(indicator));
+    
+    // Check for knowledge panel with title
+    const hasKnowledgePanel = document.querySelector('[data-attrid="title"]') !== null;
+    
+    // Check for tabs like Episodes, Cast, Reviews (indicates TV show/movie)
+    const tabs = document.querySelectorAll('[role="tab"], [role="tablist"] a');
+    let hasTVTabs = false;
+    for (const tab of tabs) {
+      const tabText = tab.textContent.toLowerCase();
+      if (tabText.includes("episodes") || tabText.includes("cast") || tabText.includes("reviews")) {
+        hasTVTabs = true;
+        break;
+      }
+    }
+    
+    return {
+      isTVShow: (hasTVIndicators && hasKnowledgePanel) || hasTVTabs,
+      hasKnowledgePanel: hasKnowledgePanel
+    };
   }
 
   function extractTitle() {
@@ -212,6 +287,97 @@
     return outerWrapper;
   }
 
+  // Create a standalone Stremio button for anime/manga/TV knowledge panels
+  function createAnimePanelStremioButton(urls, id) {
+    const container = document.createElement("div");
+    container.id = id;
+    container.style.cssText = `
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      margin: 12px 0;
+      background: linear-gradient(135deg, #f8f7ff 0%, #f0eeff 100%);
+      border-radius: 12px;
+      border: 1px solid rgba(123, 91, 245, 0.2);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      z-index: 10;
+    `;
+
+    const link = document.createElement("a");
+    link.href = urls.app;
+    link.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+      width: 100%;
+    `;
+
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.href = urls.app;
+    });
+
+    // Create icon
+    const iconBg = document.createElement("div");
+    iconBg.style.cssText = `
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, ${STREMIO_COLOR} 0%, #6b4ce0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    `;
+    iconBg.appendChild(createPlayIcon());
+
+    // Create text content
+    const textContainer = document.createElement("div");
+    textContainer.style.cssText = "display: flex; flex-direction: column; gap: 2px;";
+
+    const mainText = document.createElement("span");
+    mainText.textContent = "Open in Stremio";
+    mainText.style.cssText = `
+      font-size: 14px;
+      font-weight: 500;
+      color: ${STREMIO_COLOR};
+    `;
+
+    const subText = document.createElement("span");
+    subText.textContent = "Free";
+    subText.style.cssText = `
+      font-size: 12px;
+      color: #188038;
+    `;
+
+    textContainer.appendChild(mainText);
+    textContainer.appendChild(subText);
+
+    link.appendChild(iconBg);
+    link.appendChild(textContainer);
+    container.appendChild(link);
+
+    // Hover effects
+    container.addEventListener("mouseenter", () => {
+      container.style.background = "linear-gradient(135deg, #f0eeff 0%, #e8e5ff 100%)";
+      container.style.borderColor = "rgba(123, 91, 245, 0.4)";
+      container.style.transform = "translateY(-1px)";
+      container.style.boxShadow = "0 4px 12px rgba(123, 91, 245, 0.15)";
+    });
+    container.addEventListener("mouseleave", () => {
+      container.style.background = "linear-gradient(135deg, #f8f7ff 0%, #f0eeff 100%)";
+      container.style.borderColor = "rgba(123, 91, 245, 0.2)";
+      container.style.transform = "translateY(0)";
+      container.style.boxShadow = "none";
+    });
+
+    return container;
+  }
+
   // Find "Watch show" section and inject Stremio
   function injectIntoWatchShow() {
     if (document.getElementById(BTN_ID_WATCH_SHOW)) return;
@@ -291,9 +457,108 @@
     iconsContainer.insertBefore(stremioButton, iconsContainer.firstChild);
   }
 
+  // Find anime/manga/TV show knowledge panels and inject Stremio button
+  function injectIntoAnimePanel() {
+    // Don't inject if we already have buttons from Watch Show or Where to Watch
+    if (document.getElementById(BTN_ID_WATCH_SHOW) || 
+        document.getElementById(BTN_ID_WHERE_TO_WATCH) ||
+        document.getElementById(BTN_ID_ANIME_PANEL)) {
+      return;
+    }
+
+    // Check if this page has anime or TV show content
+    const animeInfo = detectAnimeContent();
+    const tvInfo = detectTVShowContent();
+    
+    if (!animeInfo.isAnime && !tvInfo.isTVShow) return;
+
+    // Find the "About" section - look for the heading or description area
+    let insertionPoint = null;
+    let insertBefore = true;
+    
+    // Method 1: Look for "About" heading text (exact match)
+    const allElements = document.querySelectorAll('span, div, h2, h3');
+    for (const el of allElements) {
+      const text = el.textContent.trim().toLowerCase();
+      if (text === "about" || text === "overview" || text === "description") {
+        // Found the About heading, get its parent container
+        insertionPoint = el.closest('[data-attrid]') || el.parentElement;
+        break;
+      }
+    }
+
+    // Method 2: Look for the description container with data-attrid
+    if (!insertionPoint) {
+      insertionPoint = document.querySelector('[data-attrid*="description"]');
+    }
+
+    // Method 3: Look for common description classes
+    if (!insertionPoint) {
+      const descSelectors = ['.kno-rdesc', '.LGOjhe', '.kno-desc'];
+      for (const selector of descSelectors) {
+        insertionPoint = document.querySelector(selector);
+        if (insertionPoint) break;
+      }
+    }
+
+    // Method 4: Find the knowledge panel title and insert after header area
+    if (!insertionPoint) {
+      const titleEl = document.querySelector('[data-attrid="title"]');
+      if (titleEl) {
+        // Walk up to find the header container
+        let headerContainer = titleEl;
+        for (let i = 0; i < 5; i++) {
+          if (headerContainer.parentElement) {
+            const parent = headerContainer.parentElement;
+            // Look for a container that has multiple children (header area)
+            if (parent.children.length >= 2) {
+              headerContainer = parent;
+              break;
+            }
+            headerContainer = parent;
+          }
+        }
+        // Insert after the header container
+        insertionPoint = headerContainer;
+        insertBefore = false;
+      }
+    }
+
+    // Method 5: Look for tabs row and insert before it
+    if (!insertionPoint) {
+      const tabsRow = document.querySelector('[role="tablist"]');
+      if (tabsRow) {
+        insertionPoint = tabsRow;
+        insertBefore = true;
+      }
+    }
+
+    if (!insertionPoint) return;
+
+    const urls = buildStremioUrls();
+    const stremioButton = createAnimePanelStremioButton(urls, BTN_ID_ANIME_PANEL);
+
+    // Insert the button
+    if (insertionPoint.parentElement) {
+      if (insertBefore) {
+        insertionPoint.parentElement.insertBefore(stremioButton, insertionPoint);
+      } else {
+        // Insert after
+        insertionPoint.parentElement.insertBefore(stremioButton, insertionPoint.nextSibling);
+      }
+    }
+  }
+
+  // Check settings and inject buttons accordingly
   function injectButtons() {
     injectIntoWatchShow();
     injectIntoWhereToWatch();
+    // Only inject anime panel button if enabled and no other buttons were added
+    chrome.storage.sync.get({ showAnimePanelButton: false }, (settings) => {
+      if (settings.showAnimePanelButton) {
+        injectIntoAnimePanel();
+      }
+    });
   }
 
   // Debounce

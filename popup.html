@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 280px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      background: #1a1a2e;
+      color: #e0e0e0;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(123, 91, 245, 0.3);
+    }
+    
+    .header img {
+      width: 32px;
+      height: 32px;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 16px;
+      color: #fff;
+    }
+    
+    .setting {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+    }
+    
+    .setting-label {
+      flex: 1;
+    }
+    
+    .setting-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    
+    .setting-desc {
+      font-size: 11px;
+      color: #888;
+      line-height: 1.4;
+    }
+    
+    /* Toggle switch */
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+      margin-left: 12px;
+    }
+    
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #3a3a4d;
+      transition: .3s;
+      border-radius: 24px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #888;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: #7b5bf5;
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(20px);
+      background-color: #fff;
+    }
+    
+    .footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(123, 91, 245, 0.3);
+      text-align: center;
+      font-size: 11px;
+      color: #666;
+    }
+    
+    .footer a {
+      color: #7b5bf5;
+      text-decoration: none;
+    }
+    
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="icons/icon48.png" alt="Stremio">
+    <h1>Open in Stremio</h1>
+  </div>
+  
+  <div class="setting">
+    <div class="setting-label">
+      <div class="setting-title">Auto-detect Shows (WIP)</div>
+      <div class="setting-desc">Automatically add Stremio button when a show or movie is detected, even without streaming info</div>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="animePanelToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+  
+  <div class="footer">
+    <a href="https://github.com/Sean-Ryan6423/Open-In-Stremio" target="_blank">GitHub</a>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
