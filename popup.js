@@ -1,5 +1,5 @@
 // Load saved settings
-chrome.storage.sync.get({ showAnimePanelButton: true }, (settings) => {
+chrome.storage.sync.get({ showAnimePanelButton: false }, (settings) => {
   document.getElementById('animePanelToggle').checked = settings.showAnimePanelButton;
 });
 
